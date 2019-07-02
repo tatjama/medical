@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Karton pacijenata</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link rel="icon" href="krst.png" type="image/png">
+
+</head>
+
+<body>
+    <div class="omotac">
+        <h1> <i class="fa fa-plus" style="font-size:48px;color:red"> ZDRAVSTVENA STANICA </i></h1>
+        <button type="reset" onclick="noviFormular()" class="fiksni">NOVI PACIJENT</button>
+        <button type="button" onclick="prikaziSvePacijente()" class="fiksni" id="sviPacijenti" style="display: none"> SVI PACIJENTI</button>
+        <a href="filteri.html" target="_blank">FILTRIRAJ PACIJENTE</a>
+
+        <form id="pokupi" style="display: none">
+            <fieldset>
+                <legend>Karton pacijenta</legend>
+
+                Ime:
+                <span class="greska" title="Pogrešan unos. Unesite ime pacijenta"></span>
+                <input type="text" placeholder="Ime pacijenta" id="ime" onblur="valid('ime', 0)" onfocus="unos(0)" required> <br> Prezime:
+                <span class="greska" title="Pogrešan unos. Unesite prezime pacijenta"></span>
+                <input type="text" placeholder="Prezime pacijenta" id="prezime" onblur="valid('prezime', 1)" onfocus="unos(1)" required><br> Datum rođenja:
+                <input type="date" id="datum" name="bday" onblur="datRodjJMBG()" required><br> JMBG:
+                <p id="pjmbg"></p>
+                <span class="greska" title="Pogrešan unos. Unesite poslednjih 6 cifara JMBG-a"></span>
+                <input type="number" placeholder="JMBG" id="jmbg" onblur="validBroj()" onfocus="unos(2)" required><br>
+                <p id="ispisjmbg"></p>
+                <button type="button" onclick="broj()"> Broj kartona:</button><input type="number" placeholder="Broj kartona" id="brojKartona" readonly>
+                <br> Krvna grupa:
+                <input list="grupa" name="grupa" id="krvnaGrupa" placeholder="Krvna grupa"><br>
+                <datalist id="grupa">
+                    <option value="0">
+                    <option value="A">
+                    <option value="B">
+                    <option value="AB">
+                    </datalist> RH faktor:<br>
+                <input type="radio" name="rh" id="pozitivna" checked> <span>+</span><br>
+                <input type="radio" name="rh"> <span>-</span><br>
+                <button type="button" onclick="pacijent()">Pokupi</button>
+                <button type="reset" onclick="obrisi()">Obriši</button>
+
+            </fieldset>
+        </form>
+
+        <div>
+            <p id='ispis'></p>
+            <!--zaglavlje je roditelj tabele za ispis kartona pacijenata. U startu je displej none. Pokretanjem
+                 funcije prikaziKarton postaje vidljivo i zaglavlje tabele i sadrzaj tabelaPacijenata-->
+            <table id="tabelaPacijenata">
+                <tr id="zaglavlje" style="display: none">
+                    <th>IME</th>
+                    <th>PREZIME</th>
+                    <th>KRVNA GRUPA</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script>
+        //funkciju poziva dugme Novi formular
+        //dugme Pokupi se pojavljuje. Prilikom ucitavanja programa dugme Pokupi je aktivno. Kada ga pritisnemo
+        // pokrecemo funkciju pacijent() i sakrivamo dugme Pokupi
+        function noviFormular() {
+            document.getElementById('pokupi').style.display = 'initial';
+            obrisi();
+        }
+
+        //Izracunava broj kartona pacijenta slucajnim metodom, Brojevi su od 10 do 100   
+        function broj() {
+            var brojKartona = Math.floor(Math.random() * (100 - 10)) + 10;
+            document.getElementById('brojKartona').value = brojKartona;
+        }
+
+        //validacija ime i prezime prilikom unosa. Proverava da li su uneti karakteri samo velika i mala slova srpske latinice
+        function valid(a, b) {
+            let val = document.getElementById(a).value;
+            if ((/[^A-Za-zČčĆćŠšĐđ]+$/.test(val)) || (val == '')) {
+                document.getElementsByClassName('greska')[b].innerHTML = '*';
+            }
+        }
+
+        //validacija jmbg-a
+        function validBroj() {
+            let val = document.getElementById('jmbg').value;
+            if (/[^0-9]/.test(val) || (val == '') || val < 010000 || val > 999999) {
+                document.getElementsByClassName('greska')[2].innerHTML = '*';
+            }
+            document.getElementById('ispisjmbg').innerHTML = (document.getElementById('pjmbg').innerHTML) + val;
+        }
+
+        //brise * kada je onfocus polje u koje treba da unesemo ispravku
+        function unos(b) {
+            document.getElementsByClassName('greska')[b].innerHTML = '';
+        }
+
+        //datum rodjenja pretvaramo u prvih 7 cifara jmbg-a
+        function datRodjJMBG() {
+            var novi = document.getElementById('datum').value.split('-');
+            document.getElementById('pjmbg').innerHTML = novi[2] + novi[1] + novi[0].slice(1);
+        }
+
+        //brisemo upisane vrednosti za jmbg
+        function obrisi() {
+            document.getElementById('pjmbg').innerHTML = '';
+            document.getElementById('ispisjmbg').innerHTML = '';
+            document.getElementById('ime').value = '';
+            document.getElementById('prezime').value = '';
+            document.getElementById('datum').value = '';
+            document.getElementById('jmbg').value = '';
+            document.getElementById('brojKartona').value = '';
+            document.getElementById('krvnaGrupa').value = '';
+        }
+
+        //funkciju poziva dugme Pokupi          
+        //funkcija prikuplja podatke iz forme u HTML-u i smesta u objekat sa nazivom noviPacijent.
+        //potom ubacuje metodom push objekat noviPacijent u niz nizPacijent gde ga pamti
+        //Istovremeno sakriva dugme Pokupi  da ne bismo mogli greskom da prepisemo jednog pacijenta drugim 
+        // Inicijalizujemo promenljivu nizPacijenata kao niz u koji smestamo dobijene objekte
+        var nizPacijenata = [];
+
+        function pacijent() {
+            if (document.getElementById('ime').value == '' || document.getElementById('prezime').value == '' ||
+                document.getElementById('datum').value == '' || document.getElementById('datum').value == '' ||
+                document.getElementById('brojKartona').value == '' || document.getElementById('krvnaGrupa').value ==
+                '' || document.getElementsByClassName('greska')[0].innerHTML != '' || document.getElementsByClassName('greska')[1].innerHTML != '' ||
+                document.getElementsByClassName('greska')[2].innerHTML != '') {
+                alert('Neispravan unos ili prazno polje');
+            } else {
+                document.getElementById('pokupi').style.display = 'none';
+                document.getElementById('sviPacijenti').style.display = 'initial';
+                var noviPacijent = {};
+
+                noviPacijent.ime = document.getElementById('ime').value.toUpperCase();
+                noviPacijent.prezime = document.getElementById('prezime').value.toUpperCase();
+                noviPacijent.datumRodjenja = document.getElementById('datum').value;
+                noviPacijent.jmbg = document.getElementById('datum').value;
+                noviPacijent.brojKartona = document.getElementById('brojKartona').value;
+                noviPacijent.grupa = document.getElementById('krvnaGrupa').value;
+                if (document.getElementById('pozitivna').checked) {
+                    noviPacijent.rh = '+';
+                } else {
+                    noviPacijent.rh = '-';
+                }
+
+                //vadi niz iz local S i parsira u JavaScript, smesta u promenljivu nizPacijenata
+                var nizPacijenata = JSON.parse(localStorage.getItem('niz')) || [];
+                //ubacuje novog pacijenta objekat u nizPaciojenata
+                nizPacijenata.push(noviPacijent);
+                //smesta nizPacijenata u localStoride
+                localStorage.setItem('niz', JSON.stringify(nizPacijenata));
+
+                //pravljenje tabele svih pacijenata koja je sakrivena stilom displej none. Vidljiva je 
+                //kada pokrenemo funkciju prikaziKarton   
+                for (let i = 0; i < nizPacijenata.length; i++) {
+                    var tabelaPacijenata = document.getElementById('zaglavlje');
+                    tabelaPacijenata.style.display = 'none';
+                    var redPacijent = document.createElement('tr');
+                    var celijaIme = document.createElement('td');
+                    celijaIme.innerHTML = nizPacijenata[i].ime;
+
+                    redPacijent.appendChild(celijaIme);
+                    var celijaPrezime = document.createElement('td');
+                    celijaPrezime.innerHTML = nizPacijenata[i].prezime;
+
+                    redPacijent.appendChild(celijaPrezime);
+                    var celijaGrupa = document.createElement('td');
+                    celijaGrupa.innerHTML = nizPacijenata[i].grupa;
+                    redPacijent.appendChild(celijaGrupa);
+                    tabelaPacijenata.appendChild(redPacijent);
+                }
+            }
+        } //kraj funkcije pacijent
+
+        //funkcija menja stil displeja sa none na initial, i time var tabelaPacijenata biva vidljiva
+        function prikaziSvePacijente() {
+            document.getElementById('zaglavlje').style.display = 'initial';
+            tabelaPacijenata.style.display = 'initial';
+        }
+    </script>
+
+</body>
+
+</html>

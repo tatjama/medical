@@ -1,0 +1,92 @@
+body {
+    font-weight: bold;
+}
+
+fieldset {
+    width: 400px;
+    background-color: blanchedalmond;
+    border: 2px solid darksalmon;
+}
+
+a {
+    border-radius: 20px;
+    padding: 12px;
+    width: 120px;
+    background-color: lightgoldenrodyellow;
+    text-decoration: none;
+    border: 2px solid grey;
+    border-left-color: lightgray;
+    border-top-color: lightgrey;
+    color: black;
+}
+
+a:hover {
+    background-color: darksalmon;
+    color: white;
+}
+
+button {
+    border-radius: 20px;
+    padding: 5px;
+    width: 120px;
+    background-color: lightgoldenrodyellow;
+}
+
+button:hover {
+    background-color: gray;
+    color: bisque;
+    font-weight: bold;
+}
+
+input {
+    width: 200px;
+    height: 30px;
+    margin: 3px;
+    border: 2px solid darksalmon;
+}
+
+span {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+td,
+th {
+    height: 50px;
+    width: 150px;
+    border: 2px solid black;
+    text-align: center;
+}
+
+th {
+    background-color: darksalmon;
+}
+
+.omotac {
+    position: relative;
+    left: 30%;
+}
+
+.fiksni {
+    position: sticky;
+    top: 0px;
+    left: 20%;
+    z-index: 2;
+    width: 200px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.greska {
+    color: red;
+}
+
+#roditelj {
+    position: relative;
+    left: -20%;
+}
+
+#pokupi {
+    text-align: right;
+}

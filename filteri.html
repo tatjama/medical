@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Filteri </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link rel="icon" href="krst.png" type="image/png">
+
+</head>
+
+<body>
+    <a href="karton2.html" target="_blank">Novi pacijent</a>
+    <div class="omotac">
+
+        <h1 onmouseover="filter()"> <i class="fa fa-plus" style="font-size:48px;color:red">  </i> FILTER UNETIH PACIJENATA</h1>
+
+        <!-- <button type="button" onclick="filter()" class="fiksni">Filteri</button><br><br>-->
+
+        <!--Forma za izbor filtera-->
+
+        <form id="selektujFilter" style="display: none">
+            <fieldset>
+                Krvna grupa:<br>
+                <select id="filterGrupa" size="4">          
+                        
+                                <option value="0">  0 grupa </option>
+                                <option value="A">  A grupa </option>
+                                <option value="B">  B grupa </option>
+                                <option value="AB"> AB grupa </option>  
+                        </select><br> RH faktor:<br>
+                <select id="filterFaktor" size="2">
+                        
+                            <option value="+">pozitivan</option>
+                            <option value="-">negativan</option>
+                        </select><br> Pacijenti stariji od 30 godina:
+                <input type="checkbox" id="stariji"><br>Pacijenti čije ime sadrži sledeće karaktere:<br>
+                <input type="text" id="karakter"><br><br>
+                <input type="checkbox" id="prebroj">Prebroj filtrirane pacijente<br>
+
+                <button type="button" onclick="filtriraj()">Filtriraj</button>
+                <button type="reset">Obriši</button>
+
+            </fieldset>
+        </form>
+        <br><br>
+
+        <div id="ispisOpcijaFiltera"></div>
+
+        <table id="roditelj">
+            <tr id="tabelaFiltriranihPacijenata" style="display: none">
+                <th>IME</th>
+                <th>PREZIME</th>
+                <th>DATUM ROĐENJA</th>
+                <th>JMBG</th>
+                <th>BROJ KARTONA</th>
+                <th>KRVNA GRUPA</th>
+                <th>RH FAKTOR</th>
+            </tr>
+        </table>
+
+    </div>
+    <script>
+        //otvara prozor za selektovanje filtera i ponistava prethodno zadat filter
+        function filter() {
+            let sFilter = document.getElementById('selektujFilter');
+            sFilter.style.display = 'initial';
+            sFilter.value = '';
+        }
+
+        //funkcija primenjuje filtere
+        /*Filtrira tebele pacijenata po 4 osnova.
+        - 1.Krvna grupa
+         - 2. RH faktor
+         - 3. Stariji od 30 godina
+         - 4. po imenu pacijenata*/
+        function filtriraj() {
+            //nizPacijenata iyvlacimo iz localS
+            nizPacijenata = JSON.parse(localStorage.getItem('niz'));
+            let filterGrupa = document.getElementById('filterGrupa').value;
+            let filterFaktor = document.getElementById('filterFaktor').value;
+            let stariji = document.getElementById('stariji');
+            var karakter = document.getElementById('karakter').value.toUpperCase();
+
+            //Filtriramo po krvnim grupama. Pocetnom nizu menjamo ime u novi niz da bismo rezultat uvek
+            // trazili po imenu novog niza, cak i kada ne primenimo filter jer nije pozvan 
+            var filterKrvnaGrupa = nizPacijenata;
+            if (filterGrupa != '') {
+                filterKrvnaGrupa = nizPacijenata.filter(
+                    function(noviPacijent) {
+                        if (noviPacijent.grupa == filterGrupa) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    });
+            }
+
+            //filter za RH faktor. Funkcija filter
+            var filterRHFaktor = filterKrvnaGrupa;
+            if (filterFaktor != '') {
+                filterRHFaktor = filterKrvnaGrupa.filter(
+                    function(noviPacijent) {
+                        if (noviPacijent.rh == filterFaktor) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    });
+            }
+
+            //filter stariji od 30 godina. Proveravamo da li je cekirana opcija stariji od 30 godina
+            //iz niza pacijenata ugradjenom metodom filter uklanjamo pacijente mladje od 30 godina
+            var izbacenMladji = filterRHFaktor;
+            if (stariji.checked) {
+                izbacenMladji = filterRHFaktor.filter(function(osoba) {
+                    let godinaRodjenja = parseInt(osoba.datumRodjenja);
+                    if (godinaRodjenja <= 1988) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+            }
+
+            //filter po ukljucenim slovima. U input polje ubacimo proizvoljan broj karaktera
+            filterPoImenu = izbacenMladji;
+
+            if (karakter == '') {} else {
+                var filterPoImenu = [];
+                for (let i = 0; i < izbacenMladji.length; i++) {
+                    var cha = (izbacenMladji[i].ime).indexOf(karakter);
+
+                    if (cha >= 0) {
+                        filterPoImenu.push(izbacenMladji[i]);
+                    }
+                }
+            }
+
+            //pozvamo funkciju za iscrtavanje tabele sa filtriranim pacijentima
+            tabelaFiltriranihPacijenata(filterPoImenu);
+
+            //Prebrojavanje pacijenta koji su filtrirani
+            if (document.getElementById('prebroj').checked) {
+                var nizPrebroj = filterPoImenu.map(
+                    function(elemenat) {
+                        let suma = 1;
+                        for (let i = 0; i < filterPoImenu.length; i++) {
+                            suma = suma + i;
+                            return suma;
+                        }
+                    }
+                );
+
+                //ispis broja prebrojanih pacijenata        
+                let tabela = document.getElementById('tabelaFiltriranihPacijenata');
+                let ispisBrojaPacijenata = document.createElement('p');
+                ispisBrojaPacijenata.innerHTML = 'Ukupan broj pacijenata po  filterima je ' + nizPrebroj.length;
+                tabela.appendChild(ispisBrojaPacijenata);
+            }
+
+            //Funkcija koja pravi tabelu sa filtriranim pacijentima
+            function tabelaFiltriranihPacijenata(x) {
+                let tabela = document.getElementById('tabelaFiltriranihPacijenata');
+                tabela.style.display = 'initial';
+
+                x.forEach(
+                    function(y) {
+                        let red = document.createElement('tr');
+
+                        for (i in y) {
+                            let celija = document.createElement('td');
+                            celija.innerHTML = y[i];
+                            red.appendChild(celija);
+                        }
+                        tabela.appendChild(red);
+                    });
+                return x;
+            }
+            //kraj funkcije tabela filtriranih pacijenata    
+        }
+        //kraj funkcije filtriraj
+    </script>
+
+
+
+</body>
+
+</html>
